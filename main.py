@@ -1,5 +1,13 @@
 import re
+"""
+important 
+right now ignores whether
+function()
+function(1)
+function(1,2,3)
 
+we treat it all as the same signature "function"
+"""
 
 class FunctionNode:
   """
@@ -9,25 +17,26 @@ class FunctionNode:
   """
   def __init__(self, signature: str):
     self.signature = signature
+    self.calls = []
 
 
-class FunctionEdges:
-  """
-  edges/dependencies
-
-  """
-
-
-allNodes = set()
+allNodeSignatures = set()
+allNodeMaps = dict()
 
 
 def scanFile(file_path: str):
   with open(file_path, "r") as f:
     for function_block in getFunctionBlock(f):
-      function_signature = function_block[0]
+      function_signature = getFunctionNameOnly(function_block[0])
+      if function_signature not in allNodeSignatures:
+        # add to cache
+        allNodeSignatures.add(function_signature)
+        # add to hashmap for fast retrieval
+        allNodeMaps[function_signature] = FunctionNode(function_signature)
       print(function_signature, end="")
-      for function_calls in getFunctionCalls(function_block):
-        print(f" {function_calls}")
+      for function_call in getFunctionCalls(function_block):
+        allNodeMaps[function_signature].calls.append(getFunctionNameOnly(function_call))
+        print(f" {function_call}")
 
 
 def getFunctionBlock(file):
@@ -76,5 +85,13 @@ def getFunctionCalls(block):
     if match:
       yield match.group(1)
 
+
+def getFunctionNameOnly(function_call_or_signature: str):
+  match = re.match("(def\s)*([a-zA-Z_][a-zA-Z0-9_]+)", function_call_or_signature)
+  if match:
+    return match.group(2)
+
 scanFile("inputs/samefile.py")
+print(allNodeMaps["function1"].calls)
+print(allNodeMaps["function2"].calls)
 
