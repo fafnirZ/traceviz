@@ -1,13 +1,39 @@
 import re
 
+
+class FunctionNode:
+  """
+  Properties
+    calls -> list[*FunctionNodes]
+    signature -> def ...()->:
+  """
+  def __init__(self, signature: str):
+    self.signature = signature
+
+
+class FunctionEdges:
+  """
+  edges/dependencies
+
+  """
+
+
+allNodes = set()
+
+
 def scanFile(file_path: str):
   with open(file_path, "r") as f:
-    getFunctionSignatures(f)
+    for function_block in getFunctionBlock(f):
+      function_signature = function_block[0]
+      print(function_signature, end="")
+      for function_calls in getFunctionCalls(function_block):
+        print(f" {function_calls}")
 
 
-def getFunctionSignatures(file):
+def getFunctionBlock(file):
   """
-  get all function signatures
+  uses a generator
+  get all function blocks
 
   regex rules:
   must start with def
@@ -26,11 +52,29 @@ def getFunctionSignatures(file):
   required colon: 
     :
   """
-  signatures = []
-
+  block = []
   for line in file:
     match = re.match("def [a-zA-Z_][a-zA-Z0-9_]*\s*\(.*\)\s*(\s*\->.+\s*)*:", line)
-    print(match)
+    if match:
+      start = True
+      block.append(line)
+    elif re.match("\s+.+", line):
+      # anything indented
+      block.append(line)
+    else:
+      yield block
+      # reset block
+      block = []
 
+  # at the end yield block
+  yield block
+
+
+def getFunctionCalls(block):
+  for line in block:
+    match = re.match("\s*([a-zA-Z_][a-zA-Z0-9_]*\(.*\))", line)
+    if match:
+      yield match.group(1)
 
 scanFile("inputs/samefile.py")
+
