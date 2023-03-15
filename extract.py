@@ -1,28 +1,6 @@
 import re
-"""
-important 
-right now ignores whether
-function()
-function(1)
-function(1,2,3)
-
-we treat it all as the same signature "function"
-"""
-
-class FunctionNode:
-  """
-  Properties
-    calls -> list[*FunctionNodes]
-    signature -> def ...()->:
-  """
-  def __init__(self, signature: str):
-    self.signature = signature
-    self.calls = []
-
-
-allNodeSignatures = set()
-allNodeMaps = dict()
-
+from store import allNodeMaps, allNodeSignatures, allDirectedEdges
+from model import FunctionNode
 
 def scanFile(file_path: str):
   with open(file_path, "r") as f:
@@ -33,10 +11,13 @@ def scanFile(file_path: str):
         allNodeSignatures.add(function_signature)
         # add to hashmap for fast retrieval
         allNodeMaps[function_signature] = FunctionNode(function_signature)
-      print(function_signature, end="")
+      # print(function_signature, end="")
       for function_call in getFunctionCalls(function_block):
-        allNodeMaps[function_signature].calls.append(getFunctionNameOnly(function_call))
-        print(f" {function_call}")
+        # edges
+        edge = (function_signature, getFunctionNameOnly(function_call))
+        if edge not in allDirectedEdges:
+          allDirectedEdges.add(edge)
+          # print()
 
 
 def getFunctionBlock(file):
@@ -91,7 +72,9 @@ def getFunctionNameOnly(function_call_or_signature: str):
   if match:
     return match.group(2)
 
-scanFile("inputs/samefile.py")
-print(allNodeMaps["function1"].calls)
-print(allNodeMaps["function2"].calls)
+
+
+# scanFile("inputs/samefile.py")
+# print(allNodeMaps["function1"].calls)
+# print(allNodeMaps["function2"].calls)
 
