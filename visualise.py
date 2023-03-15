@@ -5,8 +5,8 @@ from store import allNodeSignatures, allDirectedEdges
 
 app = Dash(__name__)
 
-# scanFile("inputs/samefile.py")
-scanFile("inputs/myownExtractfile.py")
+scanFile("inputs/samefile.py")
+# scanFile("inputs/myownExtractfile.py")
 
 elems = []
 for node in allNodeSignatures:
