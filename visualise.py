@@ -5,10 +5,12 @@ from store import allNodeSignatures, allDirectedEdges
 
 app = Dash(__name__)
 
-scanFile("inputs/samefile.py")
+# scanFile("inputs/samefile.py")
+scanFile("inputs/myownExtractfile.py")
 
 elems = []
 for node in allNodeSignatures:
+    print(node)
     elems.append({
         "data": {
             "id": node,
@@ -18,6 +20,7 @@ for node in allNodeSignatures:
     })
 
 for edges in allDirectedEdges:
+    print(edges)
     src, dest = edges
     elems.append({
         'data': {

@@ -9,9 +9,6 @@ def scanFile(file_path: str):
     TODO first pass second pass should be for entire glob files
     """
     for function_block in getFunctionBlock(f):
-      if len(function_block) < 2:
-        # skip if not a proper function block
-        continue
       function_signature = getFunctionNameOnly(function_block[0])
       if function_signature == None:
         continue
@@ -19,19 +16,11 @@ def scanFile(file_path: str):
         # add to cache
         allNodeSignatures.add(function_signature)
 
-  """
-  second pass for function calls
-  """
-  with open(file_path, "r") as f:
-    for function_block in getFunctionBlock(f):
-      if len(function_block) < 2:
-        # skip if not a proper function block
-        continue
-      function_signature = getFunctionNameOnly(function_block[0])
-      if function_signature == None:
-        continue
 
-      # get function calls
+    """
+    second pass for function calls
+    """
+    for function_block in getFunctionBlock(f):
       for function_call in getFunctionCalls(function_block):
         function_call_name_only = getFunctionNameOnly(function_call)
         if function_signature not in allNodeSignatures:
@@ -70,22 +59,14 @@ def getFunctionBlock(file):
   """
   block = []
   for line in file:
-    # print(line, end="")
     match = re.match("def [a-zA-Z_][a-zA-Z0-9_]*\s*\(.*\)\s*(\s*\->.+\s*)*:", line)
     if match:
-      # print(" signature")
+      start = True
       block.append(line)
     elif re.match("\s+.+", line):
       # anything indented
       block.append(line)
-      # print(" continue")
-    elif re.match("\n", line):
-      block.append(line)
-      # print(" contunue")
-      yield block
-      block = []
     else:
-      # print(block)
       yield block
       # reset block
       block = []
@@ -96,7 +77,7 @@ def getFunctionBlock(file):
 
 def getFunctionCalls(block):
   for line in block:
-    match = re.match(".*\s+([a-zA-Z_][a-zA-Z0-9_]*\(.*\))", line)
+    match = re.match("\s*([a-zA-Z_][a-zA-Z0-9_]*\(.*\))", line)
     if match:
       yield match.group(1)
 
@@ -105,8 +86,3 @@ def getFunctionNameOnly(function_call_or_signature: str):
   match = re.match("(def\s)*([a-zA-Z_][a-zA-Z0-9_]+)", function_call_or_signature)
   if match:
     return match.group(2)
-
-
-
-
-
